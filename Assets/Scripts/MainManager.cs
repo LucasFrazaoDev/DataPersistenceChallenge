@@ -11,14 +11,23 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text bestScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
     private int m_Points;
     
     private bool m_GameOver = false;
+    private int bestScore;
+    private string bestPlayer;
 
-    
+    private void Awake()
+    {
+        DataPersistence.Instance.LoadHighScore();
+        bestScore = DataPersistence.Instance.bestScore;
+        bestPlayer = DataPersistence.Instance.bestPlayer;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -36,6 +45,8 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        SetBestPlayer();
     }
 
     private void Update()
@@ -72,5 +83,29 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        CheckBestPlayer();
+    }
+
+    private void CheckBestPlayer()
+    {
+        if (m_Points > bestScore)
+        {
+            bestPlayer = DataPersistence.Instance.currentPlayer;
+            bestScore = m_Points;
+
+            DataPersistence.Instance.SaveHighscore(bestScore, bestPlayer);
+        }
+    }
+
+    private void SetBestPlayer()
+    {
+        if (bestPlayer == null && bestScore == 0)
+        {
+            bestScoreText.text = "";
+        }
+        else
+        {
+            bestScoreText.text = $"Best Score - {bestPlayer.ToUpper()}: {bestScore}";
+        }
     }
 }
